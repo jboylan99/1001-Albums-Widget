@@ -13,11 +13,8 @@ app.get('/project/jasons-attempt', async (req, res) => {
       return res.status(response.status).send('Error fetching project data');
     }
     const data = await response.json();
-
-    const currentAlbum = data.currentAlbum;
-
     // res.send(`Album Name: ${currentAlbum.artist} - ${currentAlbum.name}`);
-    res.json(currentAlbum); // send JSON response to client
+    res.json(data); // send JSON response to client
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');

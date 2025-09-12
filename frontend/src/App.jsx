@@ -5,7 +5,7 @@ import './App.css'
 
 function App() {
   const [count, setCount] = useState(0);
-  const[albums, setAlbums] = useState([]);
+  const[jsonData, setJsonArray] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,8 +15,8 @@ function App() {
       if (!res.ok) throw new Error("Project not found.");
       return res.json();
     })
-    .then((data) => {
-      setAlbums([data]);
+    .then((payload) => {
+      setJsonArray([payload]);
       setLoading(false);
     })
     .catch((err) => {
@@ -29,14 +29,47 @@ function App() {
   if (error) return <p style={{ color: "red" }}>Error: {error}</p>;
 
 
+  const getTopAlbums = () => {
+    console.log("jsonData in getTopAlbums:", jsonData);
+    const history = jsonData[0]?.history;
+    if (!history.length) return [];
+
+    const sorted = [...history]
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 10);
+
+      
+  // Get the 5th highest rating (could be a tie)
+  const top5 = sorted.slice(0, 10);
+  const minTopRating = top5[top5.length - 1].rating;
+
+  // Get all albums with rating >= minTopRating
+  const tiedAlbums = sorted.filter(album => album.rating >= minTopRating);
+
+  // If more than 5 tied, randomly pick 5
+  if (tiedAlbums.length > 10) {
+    const shuffled = tiedAlbums.sort(() => 0.5 - Math.random()); // shuffle
+    return shuffled.slice(0, 10);
+  }
+
+  return top5;
+  };
+
   return (
     <div className="app">
       <h1>🎵 1001 Albums Widget</h1>
       <div className="album-list">
-        {albums.map((album, i) => (
+        {jsonData.map((data, i) => (
           <ul key={i} className="album-item">
-            <strong>{album.name}</strong> — {album.artist}
+            <strong>{data.currentAlbum.artist}</strong> — {data.currentAlbum.name}
           </ul>
+        ))}
+      </div>
+      <div className="top-albums">
+        {getTopAlbums().map((item, i) => (
+          <li key={i} className="top-5-album">
+            Album: {item.album.artist} - {item.album.name}: {item.rating}/5
+          </li>
         ))}
       </div>
     </div>
